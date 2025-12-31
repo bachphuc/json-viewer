@@ -1,159 +1,182 @@
-/* ---------------- DISPLAY LEVEL 1 ------------------- */
+let loadedJson = null;
 
+/* ---------- CELL EDITING ---------- */
+function makeCellEditable(td, dataPath) {
+    const oldValue = td.innerText;
+    td.innerHTML = "";
+    const input = document.createElement("input");
+    input.type = "text";
+    input.value = oldValue;
+    input.style.width = "100%";
+
+    td.appendChild(input);
+    input.focus();
+
+    const save = () => {
+        td.innerHTML = input.value;
+        updateJsonValue(dataPath, input.value);
+        attachCellEditHandler(td, dataPath);
+    };
+
+    input.addEventListener("blur", save);
+    input.addEventListener("keydown", e => {
+        if (e.key === "Enter") save();
+        if (e.key === "Escape") { td.innerHTML = oldValue; attachCellEditHandler(td, dataPath); }
+    });
+}
+
+function attachCellEditHandler(td, dataPath) {
+    if (!dataPath) return;
+    td.style.cursor = "pointer";
+    td.onclick = () => makeCellEditable(td, dataPath);
+}
+
+/* ---------- UPDATE JSON ---------- */
+function updateJsonValue(path, newValue) {
+    const parts = path.split(".");
+    let obj = loadedJson;
+    for (let i = 0; i < parts.length - 1; i++)
+        obj = obj[parts[i]];
+
+    let raw = newValue;
+    if (!isNaN(raw) && raw.trim() !== "") raw = Number(raw);
+    else if (raw === "true") raw = true;
+    else if (raw === "false") raw = false;
+
+    obj[parts.at(-1)] = raw;
+}
+
+/* ---------- ADD & DELETE ROW ---------- */
+function deleteRowFromArray(arrayPath, index) {
+    const parts = arrayPath.split(".");
+    let arr = loadedJson;
+    for (let i = 0; i < parts.length; i++)
+        arr = arr[parts[i]];
+
+    arr.splice(index, 1);
+    displayJson(loadedJson);
+}
+
+function addRowToArray(arrayPath) {
+    const parts = arrayPath.split(".");
+    let arr = loadedJson;
+    for (let i = 0; i < parts.length; i++)
+        arr = arr[parts[i]];
+
+    arr.push({});
+    displayJson(loadedJson);
+}
+
+/* ---------- RENDER JSON ---------- */
 function displayJson(json) {
+    loadedJson = json;
     const output = document.getElementById("output");
     output.innerHTML = "";
+    renderObjectRecursive(json, output, "");
+}
 
-    const primitiveTableData = []; // key/value list
-    const complexFields = [];      // store non-primitive fields
+function renderObjectRecursive(obj, container, path) {
+    const primitives = [];
+    const objects = [];
+    const arrays = [];
 
-    for (const [key, value] of Object.entries(json)) {
-        if (value === null ||
-            typeof value === "string" ||
-            typeof value === "number" ||
-            typeof value === "boolean") 
-        {
-            primitiveTableData.push([key, value]);
-        } else {
-            complexFields.push([key, value]);
-        }
+    for (const key in obj) {
+        const value = obj[key];
+        const newPath = path ? `${path}.${key}` : key;
+
+        if (Array.isArray(value)) arrays.push({ key, value, newPath });
+        else if (typeof value === "object" && value !== null) objects.push({ key, value, newPath });
+        else primitives.push({ key, value, newPath });
     }
 
-    /* Render level-1 primitives into one table */
-    if (primitiveTableData.length > 0) {
+    /* ---- primitives ---- */
+    if (primitives.length > 0) {
         const table = document.createElement("table");
-        const header = table.insertRow();
-        header.innerHTML = "<th>Field</th><th>Value</th>";
+        table.insertRow().innerHTML = "<th>Field</th><th>Value</th>";
 
-        primitiveTableData.forEach(([key, value]) => {
+        primitives.forEach(p => {
             const row = table.insertRow();
-            row.insertCell().innerText = key;
-            row.insertCell().innerText = value;
-        });
-
-        const title = document.createElement("h3");
-        title.innerText = "Basic Fields";
-        output.appendChild(title);
-        output.appendChild(table);
-    }
-
-    /* Render complex fields */
-    complexFields.forEach(([key, value]) => {
-        const container = document.createElement("div");
-        container.innerHTML = `<h3>${key}</h3>`;
-        container.appendChild(renderValue(value)); // recursive
-        output.appendChild(container);
-    });
-}
-
-/* ------------ UNIVERSAL VALUE RENDERER ---------------- */
-
-function renderValue(value) {
-    if (Array.isArray(value)) {
-        return renderArrayTable(value);
-    } 
-    else if (typeof value === "object" && value !== null) {
-        return renderObjectRecursive(value);
-    } 
-    else {
-        const div = document.createElement("div");
-        div.innerText = value;
-        return div;
-    }
-}
-
-/* ------------ ARRAY of OBJECTS as DYNAMIC TABLE ---------- */
-
-function renderArrayTable(arrayData) {
-    const table = document.createElement("table");
-
-    // collect all keys from all objects in array
-    const allKeys = new Set();
-    arrayData.forEach(item => {
-        if (typeof item === "object" && item !== null) {
-            Object.keys(item).forEach(k => allKeys.add(k));
-        }
-    });
-
-    const headers = Array.from(allKeys);
-
-    // array of primitives → list values only
-    if (!headers.length) {
-        arrayData.forEach(v => {
-            const row = table.insertRow();
-            row.insertCell().innerText = v;
-        });
-        return table;
-    }
-
-    // header row
-    const headerRow = table.insertRow();
-    headers.forEach(h => {
-        const th = document.createElement("th");
-        th.innerText = h;
-        headerRow.appendChild(th);
-    });
-
-    // rows
-    arrayData.forEach(item => {
-        const row = table.insertRow();
-        headers.forEach(h => {
-            const cell = row.insertCell();
-            const v = item ? item[h] : "";
-            cell.appendChild(renderValue(v)); // recursive for nested data
-        });
-    });
-
-    return table;
-}
-
-/* ------------------ OBJECT RECURSIVE DISPLAY ---------------- */
-
-/* ------------------ OBJECT RECURSIVE DISPLAY (group primitive fields) ---------------- */
-
-function renderObjectRecursive(obj) {
-    const container = document.createElement("div");
-
-    const primitiveFields = [];
-    const complexFields = [];
-
-    // split primitive vs complex values
-    for (const [key, value] of Object.entries(obj)) {
-        if (
-            value === null ||
-            typeof value === "string" ||
-            typeof value === "number" ||
-            typeof value === "boolean"
-        ) {
-            primitiveFields.push([key, value]);
-        } else {
-            complexFields.push([key, value]);
-        }
-    }
-
-    /* --- render primitive values together as a table --- */
-    if (primitiveFields.length > 0) {
-        const table = document.createElement("table");
-        const header = table.insertRow();
-        header.innerHTML = "<th>Field</th><th>Value</th>";
-
-        primitiveFields.forEach(([k, v]) => {
-            const row = table.insertRow();
-            row.insertCell().innerText = k;
-            row.insertCell().innerText = v;
+            row.insertCell().innerText = p.key;
+            const valCell = row.insertCell();
+            valCell.innerText = p.value;
+            attachCellEditHandler(valCell, p.newPath);
         });
 
         container.appendChild(table);
     }
 
-    /* --- render complex values recursively below --- */
-    complexFields.forEach(([key, value]) => {
-        const section = document.createElement("div");
-        section.innerHTML = `<h4>${key}</h4>`;
-        section.appendChild(renderValue(value)); // recursion
-        container.appendChild(section);
+    /* ---- objects ---- */
+    objects.forEach(o => {
+        const title = document.createElement("h3");
+        title.innerText = o.key;
+        container.appendChild(title);
+        renderObjectRecursive(o.value, container, o.newPath);
     });
 
-    return container;
+    /* ---- arrays ---- */
+    arrays.forEach(a => {
+        const title = document.createElement("h3");
+        title.innerText = a.key;
+        container.appendChild(title);
+
+        const table = renderArrayTable(a.value, a.newPath);
+        container.appendChild(table);
+
+        const btn = document.createElement("div");
+        btn.className = "add-row-btn";
+        btn.innerText = "Add Row";
+        btn.onclick = () => addRowToArray(a.newPath);
+        container.appendChild(btn);
+    });
 }
 
+/* ---- ARRAY TABLE ---- */
+function renderArrayTable(arr, arrayPath) {
+    const table = document.createElement("table");
+
+    const headers = new Set();
+    arr.forEach(obj => Object.keys(obj).forEach(k => headers.add(k)));
+
+    const headerRow = table.insertRow();
+    headers.forEach(h => headerRow.insertCell().innerText = h);
+    headerRow.insertCell().innerText = "Action";
+
+    arr.forEach((item, rowIdx) => {
+        const row = table.insertRow();
+
+        headers.forEach(h => {
+            const cell = row.insertCell();
+            cell.innerText = item[h] ?? "";
+            attachCellEditHandler(cell, `${arrayPath}.${rowIdx}.${h}`);
+        });
+
+        const delCell = row.insertCell();
+        const del = document.createElement("span");
+        del.className = "delete-btn";
+        del.innerText = "x";
+        del.onclick = () => deleteRowFromArray(arrayPath, rowIdx);
+        delCell.appendChild(del);
+    });
+
+    return table;
+}
+
+/* ---------- EXPORT ---------- */
+function exportJson() {
+    const blob = new Blob([JSON.stringify(loadedJson, null, 2)], { type: "application/json" });
+    const link = document.createElement("a");
+    link.href = URL.createObjectURL(blob);
+    link.download = "modified.json";
+    link.click();
+}
+
+/* ---------- LOAD FILE ---------- */
+document.getElementById("jsonForm").addEventListener("submit", (e) => {
+    e.preventDefault();
+    const file = document.getElementById("jsonFile").files[0];
+    const reader = new FileReader();
+    reader.onload = evt => displayJson(JSON.parse(evt.target.result));
+    reader.readAsText(file);
+});
+
+document.getElementById("exportBtn").onclick = exportJson;
