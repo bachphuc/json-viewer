@@ -421,7 +421,9 @@ var SORT_FIELDS = [
   'Rate_Amount',
   'Rate_For_Period',
   'Quantity',
-  'Post_DateTime'
+  'Post_DateTime',
+  'Is_Supplementary',
+  'Is_Cancelled',
 ];
 
 function sortKeys(keys) {

@@ -1,0 +1,54 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <title>JSON Viewer & Editor</title>
+  <style>
+    body { font-family: Arial; margin: 20px; }
+    table { border-collapse: collapse; margin: 10px 0; width: 100%; }
+    th, td { border: 1px solid black; padding: 6px; font-size: 14px; }
+    th { background: #eee; }
+    
+    .section{
+      display: flex;
+      flex-direction: row;
+    }
+    .section .section-left{
+      flex: 1;
+      background-color: red;
+      width: 0%;
+    }
+    .section .section-right{
+      flex: 1;
+      background-color: green;
+      width: 0%;
+    }
+    .table-wrapper{
+      overflow-x: auto;
+    }
+  </style>
+</head>
+<body>
+
+<h2>JSON Viewer & Editor</h2>
+
+<form id="jsonForm">
+  <input type="file" id="jsonFile" accept=".json" required />
+  <button type="submit">Load</button>
+  <button type="button" id="exportBtn">Export JSON</button>
+</form>
+
+<div id="output">
+  <div id="bookings" class="section">
+    <div class="section-left">
+
+    </div>
+    <div class="section-right">
+
+    </div>
+  </div>
+</div>
+
+<script src="testCaseViewer.js"></script>
+</body>
+</html>
