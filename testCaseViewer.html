@@ -12,20 +12,25 @@
     .section{
       display: flex;
       flex-direction: row;
+      gap: 16px;
     }
     .section .section-left{
       flex: 1;
-      background-color: red;
+      /* background-color: red; */
       width: 0%;
     }
     .section .section-right{
       flex: 1;
-      background-color: green;
+      /* background-color: green; */
       width: 0%;
     }
     .table-wrapper{
       overflow-x: auto;
     }
+    tr:nth-child(even) {
+      background-color: #efefef;
+    }
+    
   </style>
 </head>
 <body>
@@ -39,6 +44,11 @@
 </form>
 
 <div id="output">
+  <h2>Request</h2>
+  <div>
+    <div id="requestDesc"></div>
+  </div>
+  <h2>Hotel Bookings</h2>
   <div id="bookings" class="section">
     <div class="section-left">
 
@@ -47,6 +57,47 @@
 
     </div>
   </div>
+
+  <h2>Hotel Booking Room Rate Origins</h2>
+  <div id="roomRateOrigins" class="section">
+    <div class="section-left">
+
+    </div>
+    <div class="section-right">
+
+    </div>
+  </div>
+
+  <h2>Hotel Booking Room Rates</h2>
+  <div id="roomRates" class="section">
+    <div class="section-left">
+
+    </div>
+    <div class="section-right">
+
+    </div>
+  </div>
+
+  <h2>Hotel Booking Extra Rate Origins</h2>
+  <div id="extraRateOrigins" class="section">
+    <div class="section-left">
+
+    </div>
+    <div class="section-right">
+
+    </div>
+  </div>
+
+  <h2>Hotel Booking Extra Rate</h2>
+  <div id="extraRates" class="section">
+    <div class="section-left">
+
+    </div>
+    <div class="section-right">
+
+    </div>
+  </div>
+
 </div>
 
 <script src="testCaseViewer.js"></script>
