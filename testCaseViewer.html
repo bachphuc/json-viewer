@@ -30,7 +30,18 @@
     tr:nth-child(even) {
       background-color: #efefef;
     }
-    
+    #diagram{
+
+    }
+    .booking{
+      height: 48px;
+      background-color: green;
+    }
+    .rate{
+      height: 24px;
+      background-color: red;
+      border: 1px solid #000;
+    }
   </style>
 </head>
 <body>
@@ -44,6 +55,17 @@
 </form>
 
 <div id="output">
+  <div id="diagram">
+    <div class="booking">
+      <div class="rate">500</div>
+    </div>
+    <div class="booking">
+      <div class="rate">1000</div>
+    </div>
+    <div class="booking">
+      <div class="rate">500</div>
+    </div>
+  </div>
   <h2>Request</h2>
   <div>
     <div id="requestDesc"></div>

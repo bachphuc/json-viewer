@@ -66,9 +66,9 @@ var OBJECT_SCHEMAS = {
     'Is_Cancelled',
     'Post_DateTime',
     'Cancel_DateTime',
-    'Group_ID',
-    'Parent_Group_ID',
-    'Hotel_Booking_ID',
+    // 'Group_ID',
+    // 'Parent_Group_ID',
+    // 'Hotel_Booking_ID',
   ]
 
 };
@@ -102,7 +102,7 @@ function displayData(json) {
 
   // Bookings
   renderTable('#bookings .section-left', 'HotelBooking', json.Data.HotelBookings.Collection || json.Data.HotelBookings);
-  renderTable('#bookings .section-right', 'HotelBooking', json.Response.UpdateHotelBookings);
+  renderTable('#bookings .section-right', 'HotelBooking', json.Response.HotelBookings);
 
   // Room Rate Origin
   renderTable('#roomRateOrigins .section-left', 'RoomRateOrigin', json.Data.RoomRateOrigins);
